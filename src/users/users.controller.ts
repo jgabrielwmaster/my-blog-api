@@ -1,14 +1,16 @@
 import {
   Body,
   Controller,
+  DefaultValuePipe,
   Delete,
   Get,
   Param,
   ParseIntPipe,
   Post,
   Put,
+  Query,
 } from '@nestjs/common';
-import { CreateUserDto, UpdateUserDto } from './user.dto';
+import { CreateUserDto, UpdateUserDto } from './dtos/user.dto';
 import { UsersService } from './users.service';
 
 @Controller('users')
@@ -16,13 +18,21 @@ export class UsersController {
   constructor(private usersService: UsersService) {}
 
   @Get()
-  getUsers() {
-    return this.usersService.findAll();
+  getUsers(
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
+    @Query('limit', new DefaultValuePipe(2), ParseIntPipe) limit: number,
+  ) {
+    return this.usersService.findAll(page, limit);
   }
 
   @Get(':id')
   getUserById(@Param('id', ParseIntPipe) id: number) {
     return this.usersService.findOne(id);
+  }
+
+  @Get(':id/profile')
+  getProfileByUserId(@Param('id', ParseIntPipe) id: number) {
+    return this.usersService.getProfileByUserId(id);
   }
 
   @Post()

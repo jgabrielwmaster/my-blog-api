@@ -3,7 +3,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { CreateUserDto, UpdateUserDto } from './user.dto';
+import { CreateUserDto, UpdateUserDto } from './dtos/user.dto';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
@@ -15,9 +15,46 @@ export class UsersService {
     private usersRepository: Repository<User>,
   ) {}
 
-  async findAll() {
-    const users = await this.usersRepository.find();
-    return users;
+  async findAll(
+    page = 1,
+    limit = 20,
+  ): Promise<{
+    data: User[];
+    meta: { total: number; page: number; limit: number; lastPage: number };
+  }> {
+    const maxLimit = 100;
+    const take = Math.min(limit, maxLimit);
+    const skip = (page - 1) * take;
+
+    const qb = this.usersRepository
+      .createQueryBuilder('user')
+      .leftJoinAndSelect('user.profile', 'profile')
+      .select([
+        'user.id',
+        'user.email',
+        'user.createAt',
+        'user.updatedAt',
+        'profile.firstName',
+        'profile.lastName',
+        'profile.avatar',
+      ])
+      .orderBy('user.id', 'ASC')
+      .skip(skip)
+      .take(take);
+
+    const [users, total] = await qb.getManyAndCount();
+
+    const data = users;
+
+    return {
+      data,
+      meta: {
+        total,
+        page,
+        limit: take,
+        lastPage: Math.max(1, Math.ceil(total / take)),
+      },
+    };
   }
 
   async findOne(id: number) {
@@ -29,12 +66,25 @@ export class UsersService {
     return user;
   }
 
+  async getProfileByUserId(id: number) {
+    const user = await this.findOne(id);
+    if (!user) throw new NotFoundException(`User with ID ${id} not found`);
+    return user.profile;
+  }
+
   async createUser(user: CreateUserDto) {
     try {
       const newUser = await this.usersRepository.save(user);
       return newUser;
-    } catch {
-      throw new BadRequestException('Error creating user');
+    } catch (error: unknown) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : typeof error === 'string'
+            ? error
+            : 'Unknown error';
+
+      throw new BadRequestException('Error creating user: ' + message);
     }
   }
 
@@ -49,11 +99,14 @@ export class UsersService {
   }
 
   async deleteUser(id: number) {
-    const user = await this.findOne(id);
-    if (user) {
-      await this.usersRepository.delete(user);
+    try {
+      const userDeleted = await this.usersRepository.delete({ id });
+      if (userDeleted.affected === 0) {
+        throw new NotFoundException(`User with ID ${id} not found`);
+      }
       return { message: `User ID ${id} deleted successfully`, status: 200 };
+    } catch {
+      throw new NotFoundException(`User with ID ${id} not found`);
     }
-    throw new NotFoundException(`User with ID ${id} not found`);
   }
 }
