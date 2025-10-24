@@ -6,6 +6,7 @@ import {
   MaxLength,
   IsUrl,
   IsInt,
+  IsArray,
 } from 'class-validator';
 
 export class CreatePostDto {
@@ -36,4 +37,9 @@ export class CreatePostDto {
   @IsNotEmpty()
   @IsInt()
   readonly userId: number;
+
+  @IsArray()
+  @IsInt({ each: true })
+  @IsOptional()
+  readonly categoryIds?: number[];
 }

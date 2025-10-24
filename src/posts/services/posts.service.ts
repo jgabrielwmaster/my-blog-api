@@ -5,9 +5,9 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Post } from './entities/post.entity';
-import { CreatePostDto } from './dto/create-post.dto';
-import { UpdatePostDto } from './dto/update-post.dto';
+import { Post } from '../entities/post.entity';
+import { CreatePostDto } from '../dto/create-post.dto';
+import { UpdatePostDto } from '../dto/update-post.dto';
 
 @Injectable()
 export class PostsService {
@@ -31,7 +31,7 @@ export class PostsService {
       skip,
       take,
       order: { id: 'ASC' },
-      relations: ['user.profile'],
+      relations: ['user.profile', 'categories'],
     });
 
     return {
@@ -48,20 +48,10 @@ export class PostsService {
   async findOne(id: number): Promise<Post> {
     const post = await this.postsRepository.findOne({
       where: { id },
-      relations: ['user.profile'],
+      relations: ['user.profile', 'categories'],
     });
     if (!post) throw new NotFoundException(`Post with id ${id} not found`);
     return post;
-  }
-
-  async getPostsByUserId(id: number): Promise<Post[]> {
-    const posts = await this.postsRepository.find({
-      where: { user: { id } },
-      relations: ['user.profile'],
-    });
-    if (!posts || posts.length === 0)
-      throw new NotFoundException(`Posts for user with id ${id} not found`);
-    return posts;
   }
 
   async create(createPostDto: CreatePostDto): Promise<Post> {
@@ -69,6 +59,7 @@ export class PostsService {
       const newPost = await this.postsRepository.save({
         ...createPostDto,
         user: { id: createPostDto.userId },
+        categories: createPostDto.categoryIds?.map((catId) => ({ id: catId })),
       });
       return this.findOne(newPost.id);
     } catch (error: unknown) {
@@ -85,7 +76,10 @@ export class PostsService {
   async update(id: number, updatePostDto: UpdatePostDto): Promise<Post> {
     const post = await this.findOne(id);
     if (post) {
-      const updated = this.postsRepository.merge(post, updatePostDto);
+      const updated = this.postsRepository.merge(post, {
+        ...updatePostDto,
+        categories: updatePostDto.categoryIds?.map((catId) => ({ id: catId })),
+      });
       return await this.postsRepository.save(updated);
     }
     throw new NotFoundException(`Post with id ${id} not found`);

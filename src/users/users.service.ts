@@ -7,6 +7,7 @@ import { CreateUserDto, UpdateUserDto } from './dtos/user.dto';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
+import { Post } from 'src/posts/entities/post.entity';
 
 @Injectable()
 export class UsersService {
@@ -70,6 +71,40 @@ export class UsersService {
     const user = await this.findOne(id);
     if (!user) throw new NotFoundException(`User with ID ${id} not found`);
     return user.profile;
+  }
+
+  async getPostsByUserId(
+    id: number,
+    page = 1,
+    limit = 20,
+  ): Promise<{
+    data: Post[];
+    meta: { total: number; page: number; limit: number; lastPage: number };
+  }> {
+    const maxLimit = 100;
+    const take = Math.min(limit, maxLimit);
+    const skip = (page - 1) * take;
+
+    // Busca el usuario y sus posts con categorías
+    const user = await this.usersRepository.findOne({
+      where: { id },
+      relations: ['posts', 'posts.categories'],
+    });
+    if (!user) throw new NotFoundException(`User with ID ${id} not found`);
+
+    // Aplica paginación manual sobre los posts
+    const total = user.posts.length;
+    const paginatedPosts = user.posts.slice(skip, skip + take);
+
+    return {
+      data: paginatedPosts,
+      meta: {
+        total,
+        page,
+        limit: take,
+        lastPage: Math.max(1, Math.ceil(total / take)),
+      },
+    };
   }
 
   async createUser(user: CreateUserDto) {

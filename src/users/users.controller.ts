@@ -6,20 +6,16 @@ import {
   Get,
   Param,
   ParseIntPipe,
+  Patch,
   Post,
-  Put,
   Query,
 } from '@nestjs/common';
 import { CreateUserDto, UpdateUserDto } from './dtos/user.dto';
 import { UsersService } from './users.service';
-import { PostsService } from '../posts/posts.service';
 
 @Controller('users')
 export class UsersController {
-  constructor(
-    private usersService: UsersService,
-    private postsService: PostsService,
-  ) {}
+  constructor(private usersService: UsersService) {}
 
   @Get()
   getUsers(
@@ -35,8 +31,12 @@ export class UsersController {
   }
 
   @Get(':id/posts')
-  getPostsByUserId(@Param('id', ParseIntPipe) id: number) {
-    return this.postsService.getPostsByUserId(id);
+  getPostsByUserId(
+    @Param('id', ParseIntPipe) id: number,
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
+    @Query('limit', new DefaultValuePipe(2), ParseIntPipe) limit: number,
+  ) {
+    return this.usersService.getPostsByUserId(id, page, limit);
   }
 
   @Get(':id')
@@ -49,7 +49,7 @@ export class UsersController {
     return this.usersService.createUser(createUserDto);
   }
 
-  @Put(':id')
+  @Patch(':id')
   updateUser(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateUserDto: UpdateUserDto,
