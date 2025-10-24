@@ -1,7 +1,10 @@
+import { User } from 'src/users/entities/user.entity';
 import {
   Column,
   CreateDateColumn,
   Entity,
+  JoinColumn,
+  ManyToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -14,13 +17,18 @@ export class Post {
   @Column({ length: 255, type: 'varchar' })
   title: string;
 
-  @Column({ type: 'text' })
+  @Column({ type: 'text', nullable: true })
   content: string;
 
-  @Column({ length: 255, type: 'varchar', name: 'cover_image_url' })
+  @Column({
+    length: 255,
+    type: 'varchar',
+    name: 'cover_image_url',
+    nullable: true,
+  })
   coverImageUrl: string;
 
-  @Column({ type: 'varchar', length: 255 })
+  @Column({ type: 'varchar', length: 255, nullable: true })
   summary: string;
 
   @Column({ default: true, type: 'boolean', name: 'is_draft' })
@@ -39,4 +47,8 @@ export class Post {
     default: () => 'CURRENT_TIMESTAMP',
   })
   updatedAt: Date;
+
+  @ManyToOne(() => User, (user) => user.posts, { nullable: false })
+  @JoinColumn({ name: 'user_id' })
+  user: User;
 }

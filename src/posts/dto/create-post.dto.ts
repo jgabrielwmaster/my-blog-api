@@ -5,6 +5,7 @@ import {
   IsString,
   MaxLength,
   IsUrl,
+  IsInt,
 } from 'class-validator';
 
 export class CreatePostDto {
@@ -14,7 +15,7 @@ export class CreatePostDto {
   readonly title: string;
 
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   readonly content: string;
 
   @IsString()
@@ -31,4 +32,8 @@ export class CreatePostDto {
   @IsBoolean()
   @IsOptional()
   readonly isDraft?: boolean;
+
+  @IsNotEmpty()
+  @IsInt()
+  readonly userId: number;
 }

@@ -12,10 +12,14 @@ import {
 } from '@nestjs/common';
 import { CreateUserDto, UpdateUserDto } from './dtos/user.dto';
 import { UsersService } from './users.service';
+import { PostsService } from '../posts/posts.service';
 
 @Controller('users')
 export class UsersController {
-  constructor(private usersService: UsersService) {}
+  constructor(
+    private usersService: UsersService,
+    private postsService: PostsService,
+  ) {}
 
   @Get()
   getUsers(
@@ -25,14 +29,19 @@ export class UsersController {
     return this.usersService.findAll(page, limit);
   }
 
-  @Get(':id')
-  getUserById(@Param('id', ParseIntPipe) id: number) {
-    return this.usersService.findOne(id);
-  }
-
   @Get(':id/profile')
   getProfileByUserId(@Param('id', ParseIntPipe) id: number) {
     return this.usersService.getProfileByUserId(id);
+  }
+
+  @Get(':id/posts')
+  getPostsByUserId(@Param('id', ParseIntPipe) id: number) {
+    return this.postsService.getPostsByUserId(id);
+  }
+
+  @Get(':id')
+  getUserById(@Param('id', ParseIntPipe) id: number) {
+    return this.usersService.findOne(id);
   }
 
   @Post()

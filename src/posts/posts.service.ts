@@ -31,6 +31,7 @@ export class PostsService {
       skip,
       take,
       order: { id: 'ASC' },
+      relations: ['user.profile'],
     });
 
     return {
@@ -45,15 +46,31 @@ export class PostsService {
   }
 
   async findOne(id: number): Promise<Post> {
-    const post = await this.postsRepository.findOne({ where: { id } });
+    const post = await this.postsRepository.findOne({
+      where: { id },
+      relations: ['user.profile'],
+    });
     if (!post) throw new NotFoundException(`Post with id ${id} not found`);
     return post;
   }
 
+  async getPostsByUserId(id: number): Promise<Post[]> {
+    const posts = await this.postsRepository.find({
+      where: { user: { id } },
+      relations: ['user.profile'],
+    });
+    if (!posts || posts.length === 0)
+      throw new NotFoundException(`Posts for user with id ${id} not found`);
+    return posts;
+  }
+
   async create(createPostDto: CreatePostDto): Promise<Post> {
     try {
-      const newPost = this.postsRepository.create(createPostDto);
-      return await this.postsRepository.save(newPost);
+      const newPost = await this.postsRepository.save({
+        ...createPostDto,
+        user: { id: createPostDto.userId },
+      });
+      return this.findOne(newPost.id);
     } catch (error: unknown) {
       const message =
         error instanceof Error
