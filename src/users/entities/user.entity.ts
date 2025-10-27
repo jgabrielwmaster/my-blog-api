@@ -13,13 +13,15 @@ import * as bcrypt from 'bcrypt';
 
 import { Profile } from './profile.entity';
 import { Post } from '../../posts/entities/post.entity';
+import { Exclude } from 'class-transformer';
 
 @Entity({ name: 'users' })
 export class User {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ type: 'varchar', length: 255, select: false })
+  @Exclude()
+  @Column({ type: 'varchar', length: 255 })
   password: string;
 
   @Column({ type: 'varchar', length: 255, unique: true })
