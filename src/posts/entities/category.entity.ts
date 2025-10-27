@@ -16,6 +16,12 @@ export class Category {
   @Column({ type: 'varchar', length: 100, unique: true })
   name: string;
 
+  @Column({ type: 'text', nullable: true })
+  description: string;
+
+  @Column({ type: 'text', nullable: true, name: 'cover_image' })
+  coverImage: string;
+
   @CreateDateColumn({
     name: 'created_at',
     type: 'timestamp',

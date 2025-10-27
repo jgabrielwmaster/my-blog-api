@@ -66,6 +66,7 @@ describe('UsersService', () => {
         } as Profile,
         createAt: new Date(),
         updatedAt: new Date(),
+        posts: [],
       },
     ];
     (mockQueryBuilder.getManyAndCount as jest.Mock).mockResolvedValue([
@@ -93,6 +94,7 @@ describe('UsersService', () => {
       profile: mockProfile,
       createAt: new Date(),
       updatedAt: new Date(),
+      posts: [],
     };
     (mockUserRepository.findOne as jest.Mock).mockResolvedValue(user); // Cambiado a findOne
     const result = await service.findOne(1);
@@ -119,6 +121,7 @@ describe('UsersService', () => {
       },
       createAt: new Date(),
       updatedAt: new Date(),
+      posts: [],
     };
     (mockUserRepository.save as jest.Mock).mockResolvedValue(createdUser);
 
@@ -152,6 +155,7 @@ describe('UsersService', () => {
       },
       createAt: new Date(),
       updatedAt: new Date(),
+      posts: [],
     };
     const changes: UpdateUserDto = {
       email: 'updated@test.com',

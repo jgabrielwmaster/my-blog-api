@@ -96,4 +96,15 @@ export class PostsService {
       throw new NotFoundException(`Post with id ${id} not found`);
     }
   }
+
+  async getPostByCategoryId(categoryId: number): Promise<Post[]> {
+    const posts = await this.postsRepository.find({
+      relations: ['user.profile'],
+      where: {
+        categories: { id: categoryId },
+      },
+    });
+
+    return posts;
+  }
 }

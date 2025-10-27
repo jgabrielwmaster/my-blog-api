@@ -7,7 +7,7 @@ import { CreateUserDto, UpdateUserDto } from './dtos/user.dto';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
-import { Post } from 'src/posts/entities/post.entity';
+import { Post } from '../posts/entities/post.entity';
 
 @Injectable()
 export class UsersService {
@@ -109,8 +109,9 @@ export class UsersService {
 
   async createUser(user: CreateUserDto) {
     try {
-      const newUser = await this.usersRepository.save(user);
-      return newUser;
+      const newUserEntity = this.usersRepository.create(user);
+      const savedUser = await this.usersRepository.save(newUserEntity);
+      return this.findOne(savedUser.id);
     } catch (error: unknown) {
       const message =
         error instanceof Error

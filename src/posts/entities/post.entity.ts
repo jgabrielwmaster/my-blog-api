@@ -1,4 +1,4 @@
-import { User } from 'src/users/entities/user.entity';
+import { User } from '../../users/entities/user.entity';
 import {
   Column,
   CreateDateColumn,
@@ -24,7 +24,7 @@ export class Post {
   content: string;
 
   @Column({
-    length: 255,
+    length: 900,
     type: 'varchar',
     name: 'cover_image_url',
     nullable: true,
@@ -55,11 +55,9 @@ export class Post {
   @JoinColumn({ name: 'user_id' })
   user: User;
 
-  @ManyToMany(() => Category, (category) => category.posts, {
-    onDelete: 'SET NULL',
-  })
+  @ManyToMany(() => Category, (category) => category.posts)
   @JoinTable({
-    name: 'post_categories',
+    name: 'posts_categories',
     joinColumn: { name: 'post_id', referencedColumnName: 'id' },
     inverseJoinColumn: { name: 'category_id', referencedColumnName: 'id' },
   })
