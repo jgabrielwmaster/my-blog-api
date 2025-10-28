@@ -37,7 +37,11 @@ export class CreatePostDto {
 
   @IsBoolean()
   @IsOptional()
-  @ApiProperty({ description: 'Whether the post is a draft', required: false })
+  @ApiProperty({
+    description: 'Whether the post is a draft',
+    required: false,
+    default: true,
+  })
   readonly isDraft?: boolean;
 
   @IsNotEmpty()
