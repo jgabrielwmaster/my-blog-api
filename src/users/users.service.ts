@@ -23,39 +23,43 @@ export class UsersService {
     data: User[];
     meta: { total: number; page: number; limit: number; lastPage: number };
   }> {
-    const maxLimit = 100;
-    const take = Math.min(limit, maxLimit);
-    const skip = (page - 1) * take;
+    try {
+      const maxLimit = 100;
+      const take = Math.min(limit, maxLimit);
+      const skip = (page - 1) * take;
 
-    const qb = this.usersRepository
-      .createQueryBuilder('user')
-      .leftJoinAndSelect('user.profile', 'profile')
-      .select([
-        'user.id',
-        'user.email',
-        'user.createAt',
-        'user.updatedAt',
-        'profile.firstName',
-        'profile.lastName',
-        'profile.avatar',
-      ])
-      .orderBy('user.id', 'ASC')
-      .skip(skip)
-      .take(take);
+      const qb = this.usersRepository
+        .createQueryBuilder('user')
+        .leftJoinAndSelect('user.profile', 'profile')
+        .select([
+          'user.id',
+          'user.email',
+          'user.createAt',
+          'user.updatedAt',
+          'profile.firstName',
+          'profile.lastName',
+          'profile.avatar',
+        ])
+        .orderBy('user.id', 'ASC')
+        .skip(skip)
+        .take(take);
 
-    const [users, total] = await qb.getManyAndCount();
+      const [users, total] = await qb.getManyAndCount();
 
-    const data = users;
+      const data = users;
 
-    return {
-      data,
-      meta: {
-        total,
-        page,
-        limit: take,
-        lastPage: Math.max(1, Math.ceil(total / take)),
-      },
-    };
+      return {
+        data,
+        meta: {
+          total,
+          page,
+          limit: take,
+          lastPage: Math.max(1, Math.ceil(total / take)),
+        },
+      };
+    } catch {
+      throw new NotFoundException('Users not found');
+    }
   }
 
   async findOne(id: number) {
