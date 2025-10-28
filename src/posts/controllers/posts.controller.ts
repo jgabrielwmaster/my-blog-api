@@ -7,7 +7,10 @@ import {
   Param,
   Delete,
   UseGuards,
+  Req,
 } from '@nestjs/common';
+import type { Request } from 'express';
+
 import { PostsService } from '../services/posts.service';
 import { CreatePostDto } from '../dto/create-post.dto';
 import { UpdatePostDto } from '../dto/update-post.dto';
@@ -19,6 +22,7 @@ import {
   ApiBody,
   ApiTags,
 } from '@nestjs/swagger';
+import { Payload } from 'src/auth/models/payload.model';
 
 @ApiTags('posts')
 @Controller('posts')
@@ -34,8 +38,10 @@ export class PostsController {
   })
   @ApiBody({ type: CreatePostDto })
   @Post()
-  create(@Body() createPostDto: CreatePostDto) {
-    return this.postsService.create(createPostDto);
+  create(@Body() createPostDto: CreatePostDto, @Req() req: Request) {
+    const payload = req.user as Payload;
+    const userId = payload.sub;
+    return this.postsService.create(createPostDto, userId);
   }
 
   @Get()

@@ -44,11 +44,6 @@ export class CreatePostDto {
   })
   readonly isDraft?: boolean;
 
-  @IsNotEmpty()
-  @IsInt()
-  @ApiProperty({ description: 'The ID of the user creating the post' })
-  readonly userId: number;
-
   @IsArray()
   @IsInt({ each: true })
   @IsOptional()
